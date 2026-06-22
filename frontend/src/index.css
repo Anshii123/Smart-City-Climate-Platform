@@ -142,3 +142,89 @@ body {
 .dark .ambient-glow-cyan {
   background: radial-gradient(circle, rgba(6,182,212,0.07) 0%, rgba(0,0,0,0) 70%);
 }
+
+/* --- Leaflet Map Overrides --- */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background-color: var(--background) !important;
+  border-radius: 1rem;
+}
+
+/* Glassmorphism Popup styling */
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.15) !important;
+  border-radius: 1.25rem !important;
+  color: var(--foreground) !important;
+  padding: 0.5rem !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px !important;
+  line-height: 1.5 !important;
+}
+
+.leaflet-popup-close-button {
+  color: var(--muted) !important;
+  padding: 8px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: var(--foreground) !important;
+  background: transparent !important;
+}
+
+/* Animated Markers */
+@keyframes leaflet-ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-leaflet-ping {
+  animation: leaflet-ping 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Marker Cluster styling */
+.custom-cluster-icon {
+  background: rgba(5, 150, 105, 0.15) !important;
+  border: 2px solid rgba(5, 150, 105, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+
+.custom-cluster-icon-high {
+  background: rgba(225, 29, 72, 0.15) !important;
+  border: 2px solid rgba(225, 29, 72, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+

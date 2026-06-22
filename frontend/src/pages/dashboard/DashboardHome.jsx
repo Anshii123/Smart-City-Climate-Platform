@@ -1,24 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Thermometer, 
-  Trees, 
-  Wind, 
-  ShieldAlert, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Clock, 
-  Building2,
-  HeartPulse,
-  Sun
+  Thermometer, Trees, Sun, HeartPulse, ArrowUpRight, ArrowDownRight, Clock, Building2, ShieldAlert 
 } from 'lucide-react';
+
+// Custom Animated Counter component for rolling metric numbers
+const AnimatedCounter = ({ value, duration = 1.0, suffix = '', decimals = 0, prefix = '' }) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = parseFloat(value.toString().replace(/[^0-9.]/g, ''));
+    if (isNaN(end)) {
+      setCount(value);
+      return;
+    }
+    const totalMiliseconds = duration * 1000;
+    const incrementTime = 30;
+    const totalSteps = totalMiliseconds / incrementTime;
+    const stepIncrement = (end - start) / totalSteps;
+    
+    let timer = setInterval(() => {
+      start += stepIncrement;
+      if (start >= end) {
+        clearInterval(timer);
+        setCount(end);
+      } else {
+        setCount(start);
+      }
+    }, incrementTime);
+
+    return () => clearInterval(timer);
+  }, [value, duration]);
+
+  return (
+    <span className="font-mono">
+      {prefix}
+      {count.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
+};
 
 const DashboardHome = () => {
   // KPI Metrics Data
   const kpis = [
     { 
       label: 'Avg Surface Temp', 
-      value: '31.4°C', 
+      value: 31.4,
+      suffix: '°C',
       change: '+1.2°C vs decadal avg', 
       trend: 'up', 
       icon: Thermometer, 
@@ -26,7 +55,8 @@ const DashboardHome = () => {
     },
     { 
       label: 'Greenness Ratio (NDVI)', 
-      value: '24.2%', 
+      value: 24.2,
+      suffix: '%',
       change: '+0.8% this quarter', 
       trend: 'up', 
       icon: Trees, 
@@ -34,7 +64,9 @@ const DashboardHome = () => {
     },
     { 
       label: 'Urban Heat Island Offset', 
-      value: '-0.7°C', 
+      value: 0.7,
+      prefix: '-',
+      suffix: '°C',
       change: 'Due to canopy planting', 
       trend: 'down', 
       icon: Sun, 
@@ -42,7 +74,8 @@ const DashboardHome = () => {
     },
     { 
       label: 'Heat Vulnerability Index', 
-      value: '6.8 / 10', 
+      value: 6.8,
+      suffix: ' / 10',
       change: 'High-risk populations exposure', 
       trend: 'neutral', 
       icon: HeartPulse, 
@@ -75,7 +108,7 @@ const DashboardHome = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 80, damping: 15 } }
   };
 
   return (
@@ -91,17 +124,20 @@ const DashboardHome = () => {
           <motion.div
             key={kpi.label}
             variants={itemVariants}
-            className={`glass-panel border p-6 rounded-2xl flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200`}
+            whileHover={{ y: -5, scale: 1.015 }}
+            className="glass-panel border border-border p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 shadow-sm"
           >
             <div className="flex items-start justify-between">
               <span className="text-xs text-muted uppercase font-semibold tracking-wider">{kpi.label}</span>
-              <div className={`p-2 rounded-xl border flex items-center justify-center shrink-0 ${kpi.color}`}>
+              <div className={`p-2.5 rounded-xl border flex items-center justify-center shrink-0 ${kpi.color}`}>
                 <kpi.icon size={18} />
               </div>
             </div>
             
             <div className="mt-4">
-              <p className="text-3xl font-heading font-extrabold text-foreground">{kpi.value}</p>
+              <p className="text-3xl font-heading font-extrabold text-foreground flex items-baseline">
+                <AnimatedCounter value={kpi.value} prefix={kpi.prefix} suffix={kpi.suffix} decimals={kpi.value % 1 === 0 ? 0 : 1} />
+              </p>
               <div className="flex items-center gap-1 mt-2 text-xs">
                 {kpi.trend === 'up' && <ArrowUpRight size={14} className="text-rose-500 shrink-0" />}
                 {kpi.trend === 'down' && <ArrowDownRight size={14} className="text-emerald-500 shrink-0" />}
@@ -124,13 +160,14 @@ const DashboardHome = () => {
         >
           <div className="flex items-center justify-between pb-4 border-b border-border/60 mb-6">
             <div>
-              <h3 className="font-heading font-bold text-lg text-foreground">District Climate Vulnerability</h3>
+              <h3 className="font-heading font-extrabold text-lg text-foreground">District Climate Vulnerability</h3>
               <p className="text-xs text-muted font-light">Breakdown of active localized urban microclimates.</p>
             </div>
-            <button className="text-xs text-primary font-semibold hover:underline">View All Districts</button>
+            <button className="text-xs text-primary font-bold hover:underline cursor-pointer">View All Districts</button>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Table Container with scroll support and ARIA markup */}
+          <div className="overflow-x-auto" tabIndex={0} aria-label="District Climate Telemetry Table">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="text-xs text-muted uppercase border-b border-border/40 pb-2">
@@ -142,15 +179,15 @@ const DashboardHome = () => {
               </thead>
               <tbody className="divide-y divide-border/40 text-sm">
                 {districts.map((district) => (
-                  <tr key={district.name} className="hover:bg-foreground/5 transition-colors">
-                    <td className="py-4 font-medium text-foreground flex items-center gap-2">
-                      <Building2 size={16} className="text-muted" />
+                  <tr key={district.name} className="hover:bg-foreground/5 transition-colors group">
+                    <td className="py-4 font-semibold text-foreground flex items-center gap-2 group-hover:text-primary transition-colors">
+                      <Building2 size={16} className="text-muted shrink-0" />
                       {district.name}
                     </td>
                     <td className="py-4 font-mono font-semibold">{district.temp}</td>
                     <td className="py-4 font-mono">{district.greenPct}</td>
                     <td className="py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${district.statusColor}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${district.statusColor}`}>
                         {district.status}
                       </span>
                     </td>
@@ -164,11 +201,11 @@ const DashboardHome = () => {
         {/* System Warnings/Alert Log (Col Span 1) */}
         <motion.div 
           variants={itemVariants} 
-          className="glass-panel p-6 rounded-2xl border border-border flex flex-col justify-between"
+          className="glass-panel p-6 rounded-2xl border border-border flex flex-col justify-between h-full"
         >
-          <div>
-            <div className="flex items-center justify-between pb-4 border-b border-border/60 mb-6">
-              <h3 className="font-heading font-bold text-lg text-foreground">Warning Operations</h3>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-border/60">
+              <h3 className="font-heading font-extrabold text-lg text-foreground">Warning Operations</h3>
               <Clock size={16} className="text-muted" />
             </div>
 
@@ -176,21 +213,21 @@ const DashboardHome = () => {
               {alerts.map((alert) => (
                 <div 
                   key={alert.title} 
-                  className={`p-4 rounded-xl border flex gap-3 items-start ${alert.color}`}
+                  className={`p-4 rounded-xl border flex gap-3 items-start hover:scale-[1.01] transition-transform duration-200 ${alert.color}`}
                 >
-                  <ShieldAlert size={20} className="shrink-0 mt-0.5" />
+                  <ShieldAlert size={18} className="shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="text-sm font-semibold leading-tight">{alert.title}</p>
                     <p className="text-xs opacity-80">{alert.location}</p>
-                    <span className="text-[10px] opacity-60 block mt-1">{alert.time}</span>
+                    <span className="text-[10px] opacity-60 block mt-1 font-mono">{alert.time}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <button className="w-full mt-6 py-2.5 bg-foreground/5 hover:bg-foreground/10 text-foreground font-semibold rounded-xl text-sm transition-all border border-border">
-            Clear Mock Alerts
+          <button className="w-full mt-6 py-2.5 bg-foreground/5 hover:bg-foreground/10 text-foreground font-bold rounded-xl text-sm transition-all border border-border cursor-pointer">
+            Clear Active Logs
           </button>
         </motion.div>
 

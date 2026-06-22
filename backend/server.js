@@ -2,11 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import config from './config/config.js';
+import connectDB from './config/db.js';
 import requestLogger from './middleware/requestLogger.js';
 import apiRouter from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
+
+// Connect to Database
+connectDB();
 
 // Security Middlewares
 app.use(helmet());
@@ -30,7 +34,16 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to the Smart City Climate Platform API',
     endpoints: {
-      health: '/api/health'
+      health: '/api/health',
+      auth: {
+        register: '/api/auth/register',
+        login: '/api/auth/login',
+        me: '/api/auth/me'
+      },
+      uploads: '/api/uploads',
+      climate: {
+        analyze: '/api/climate/analyze'
+      }
     }
   });
 });

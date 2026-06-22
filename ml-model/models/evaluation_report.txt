@@ -1,0 +1,22 @@
+=========================================
+        MODEL EVALUATION REPORT         
+=========================================
+
+=== Heat Risk Score Metrics ===
+Mean Absolute Error (MAE): 1.9400
+Mean Squared Error (MSE):  5.8764
+Root Mean Squared Error (RMSE): 2.4241
+R-squared (R2 Score):      0.9846
+
+=== Heat Vulnerability Score Metrics ===
+Mean Absolute Error (MAE): 2.2018
+Mean Squared Error (MSE):  7.6977
+Root Mean Squared Error (RMSE): 2.7745
+R-squared (R2 Score):      0.9681
+
+=== Plantation Priority Score Metrics ===
+Mean Absolute Error (MAE): 2.6617
+Mean Squared Error (MSE):  10.6768
+Root Mean Squared Error (RMSE): 3.2675
+R-squared (R2 Score):      0.9110
+
