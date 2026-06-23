@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'; // reload watch trigger
 import cors from 'cors';
 import helmet from 'helmet';
 import config from './config/config.js';
