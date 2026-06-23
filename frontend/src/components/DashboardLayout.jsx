@@ -13,22 +13,42 @@ import {
   Bell,
   User,
   Menu,
-  X
+  X,
+  History,
+  Layers,
+  Star,
+  LogOut,
+  Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardLayout = ({ darkMode, setDarkMode }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  // Derive initials from user name
+  const initials = user?.name
+    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : 'EP';
+  const displayName = user?.name || 'Eco Planner';
+  const displayRole = user?.role 
+    ? user.role.charAt(0).toUpperCase() + user.role.slice(1) 
+    : 'Analyst';
 
   const menuItems = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Climate Assessment', path: '/dashboard/climate-assessment', icon: Brain },
     { name: 'Prediction', path: '/dashboard/prediction', icon: TrendingUp },
     { name: 'Analytics', path: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Heat Map', path: '/dashboard/heatmap', icon: Map },
     { name: 'Plantation Planner', path: '/dashboard/recommendations', icon: Trees },
     { name: 'Climate Simulator', path: '/dashboard/simulator', icon: Sliders },
+    { name: 'Prediction History', path: '/dashboard/history', icon: History },
+    { name: 'Compare Cities', path: '/dashboard/compare', icon: Layers },
+    { name: 'Plantation Rankings', path: '/dashboard/rankings', icon: Star },
   ];
 
   const isActive = (path) => {
@@ -116,7 +136,7 @@ const DashboardLayout = ({ darkMode, setDarkMode }) => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-border/60">
+        <div className="p-4 border-t border-border/60 space-y-1">
           <Link 
             to="/" 
             className="flex items-center gap-3 p-3 rounded-xl text-muted hover:text-foreground hover:bg-foreground/5 transition-all"
@@ -125,6 +145,14 @@ const DashboardLayout = ({ darkMode, setDarkMode }) => {
             <ArrowLeft size={20} className="shrink-0" />
             {!collapsed && <span className="text-sm">Public Portal</span>}
           </Link>
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all cursor-pointer"
+            title={collapsed ? 'Logout' : ''}
+          >
+            <LogOut size={20} className="shrink-0" />
+            {!collapsed && <span className="text-sm font-medium">Logout</span>}
+          </button>
         </div>
       </aside>
 
@@ -175,7 +203,7 @@ const DashboardLayout = ({ darkMode, setDarkMode }) => {
                 ))}
               </nav>
 
-              <div className="border-t border-border/60 pt-6">
+              <div className="border-t border-border/60 pt-6 space-y-1">
                 <Link 
                   to="/" 
                   onClick={() => setMobileOpen(false)}
@@ -184,6 +212,13 @@ const DashboardLayout = ({ darkMode, setDarkMode }) => {
                   <ArrowLeft size={20} />
                   <span className="text-sm">Public Portal</span>
                 </Link>
+                <button
+                  onClick={() => { setMobileOpen(false); logout(); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all cursor-pointer"
+                >
+                  <LogOut size={20} />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
               </div>
             </motion.aside>
           </>
@@ -222,11 +257,11 @@ const DashboardLayout = ({ darkMode, setDarkMode }) => {
             {/* Profile */}
             <div className="flex items-center gap-2.5 pl-2 border-l border-border/60">
               <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-heading font-semibold text-sm">
-                EP
+                {initials}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-xs font-semibold text-foreground">Eco Planner</p>
-                <p className="text-[10px] text-muted">Admin Role</p>
+                <p className="text-xs font-semibold text-foreground">{displayName}</p>
+                <p className="text-[10px] text-muted">{displayRole}</p>
               </div>
             </div>
           </div>

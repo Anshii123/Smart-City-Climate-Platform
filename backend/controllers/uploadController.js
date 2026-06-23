@@ -3,6 +3,7 @@ import path from 'path';
 import csvParser from 'csv-parser';
 import Upload from '../models/Upload.js';
 import CityData from '../models/CityData.js';
+import { loadCityDataCache } from '../services/cityDataService.js';
 
 // Helper to map row to schema safely
 const mapRow = (row, uploadId) => {
@@ -100,6 +101,7 @@ export const uploadDataset = async (req, res, next) => {
       try {
         if (parsedRows.length > 0) {
           await CityData.insertMany(parsedRows);
+          await loadCityDataCache();
         }
 
         uploadRecord.status = 'completed';

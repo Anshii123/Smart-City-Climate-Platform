@@ -53,7 +53,10 @@ export const analyzeClimate = async (req, res, next) => {
       urbanGreennessRatio: parseFloat(urbanGreennessRatio)
     };
 
+    const startTime = Date.now();
     const mlPredictions = await getPredictions(inputs);
+    const duration = Date.now() - startTime;
+    console.log(`Prediction completed in ${duration} ms`);
 
     const recommendations = generateRecommendations(inputs, mlPredictions);
 

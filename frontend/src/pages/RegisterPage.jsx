@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Briefcase, MapPin, ArrowRight, ShieldCheck, Leaf, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Urban Planner');
   const [city, setCity] = useState('Metropolis Central');
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
@@ -38,25 +42,41 @@ const RegisterPage = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
-    
-    // Simulate API request to backend
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setRegisterSuccess(true);
-      
-      // Save simulated user details to localStorage
-      localStorage.setItem('user', JSON.stringify({ name, email, role, city }));
+    setApiError('');
 
-      // Redirect to LandingPage or Login
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Backend only accepts role: 'user' | 'admin' — send 'user' always
+        body: JSON.stringify({ name, email, password, role: 'user' })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.error || 'Registration failed. Please try again.');
+      }
+
+      // Persist token and user via AuthContext
+      login(data.token, data.user);
+      setRegisterSuccess(true);
+
+      // Redirect to dashboard after brief success animation
       setTimeout(() => {
-        navigate('/login');
-      }, 1800);
-    }, 1500);
+        navigate('/dashboard');
+      }, 1500);
+
+    } catch (err) {
+      setApiError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -91,6 +111,18 @@ const RegisterPage = () => {
               className="space-y-5"
               exit={{ opacity: 0, y: -20 }}
             >
+              {/* API Error Banner */}
+              {apiError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-sm"
+                >
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span>{apiError}</span>
+                </motion.div>
+              )}
+
               {/* Full Name */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground/80 tracking-wide uppercase">Full Name</label>
@@ -241,7 +273,7 @@ const RegisterPage = () => {
                 <p><strong>Role Assigned:</strong> {role}</p>
                 <p><strong>Jurisdiction:</strong> {city}</p>
               </div>
-              <p className="text-xs text-primary animate-pulse">Redirecting to credentials portal...</p>
+              <p className="text-xs text-primary animate-pulse">Redirecting to your dashboard…</p>
             </motion.div>
           )}
         </AnimatePresence>

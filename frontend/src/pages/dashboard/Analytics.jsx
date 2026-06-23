@@ -89,7 +89,7 @@ const Analytics = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         const token = localStorage.getItem('token') || (user && user.token);
 
-        const response = await fetch('/api/city-data', {
+        const response = await fetch('/api/analytics', {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -273,7 +273,7 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Ascending nodes</span>
             </div>
-            <div className="flex-1 w-full text-xs min-h-0">
+            <div className="h-64 w-full text-xs relative overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={sortedByTemp} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -300,7 +300,7 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Node distribution</span>
             </div>
-            <div className="flex-1 w-full text-xs min-h-0">
+            <div className="h-64 w-full text-xs relative overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -331,7 +331,7 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Multi-axis index</span>
             </div>
-            <div className="flex-1 w-full text-xs min-h-0">
+            <div className="h-64 w-full text-xs relative overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={filteredData} margin={{ top: 10, right: -10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -355,7 +355,7 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Sorted ratio flow</span>
             </div>
-            <div className="flex-1 w-full text-xs min-h-0">
+            <div className="h-64 w-full text-xs relative overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={sortedByGreen} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -382,8 +382,8 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Bracket segments</span>
             </div>
-            <div className="flex-grow flex items-center min-h-0 text-xs gap-4">
-              <div className="w-[45%] h-full">
+            <div className="w-full flex items-center text-xs gap-4 h-64">
+              <div className="w-[45%] h-64 relative overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -427,7 +427,7 @@ const Analytics = () => {
               </span>
               <span className="text-[10px] text-muted font-mono uppercase">Low to high</span>
             </div>
-            <div className="flex-1 w-full text-xs min-h-0">
+            <div className="h-64 w-full text-xs relative overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={sortedByPriority} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -467,8 +467,8 @@ const Analytics = () => {
               </div>
             </div>
 
-            <div className="flex-1 w-full text-xs min-h-0 flex flex-col md:flex-row gap-6 items-center">
-              <div className="flex-1 w-full h-[90%]">
+            <div className="w-full text-xs flex flex-col md:flex-row gap-6 items-center h-64">
+              <div className="flex-1 w-full h-64 relative overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     layout="vertical"

@@ -5,7 +5,7 @@ import Lottie from 'lottie-react';
 const LottiePlayer = Lottie.default || Lottie;
 import { 
   Sliders, Sun, ShieldCheck, Thermometer, Trees, Sparkles, 
-  AlertCircle, DollarSign, Database, CloudRain, Heart, Landmark, Compass, Wind 
+  AlertCircle, DollarSign, Database, CloudRain, Heart, Landmark, Compass, Wind, ShieldAlert
 } from 'lucide-react';
 
 // Fallback Mock Dataset matching HeatMap.jsx & Analytics.jsx

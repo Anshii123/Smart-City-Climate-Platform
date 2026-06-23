@@ -1,5 +1,6 @@
 import { getPredictions } from '../services/mlService.js';
 import { generateRecommendations } from '../services/recommendationService.js';
+import Prediction from '../models/Prediction.js';
 
 const getVal = (body, keys) => {
   for (const k of keys) {
@@ -49,6 +50,8 @@ export const predictClimate = async (req, res, next) => {
       ? parseFloat(getVal(req.body, ['Longitude', 'longitude', 'lng', 'lon']))
       : 0.0;
 
+    const cityName = getVal(req.body, ['cityName', 'City Name', 'city']) || 'Custom City';
+
     const inputs = {
       latitude,
       longitude,
@@ -61,12 +64,45 @@ export const predictClimate = async (req, res, next) => {
       urbanGreennessRatio: parseFloat(greenness)
     };
 
+    const startTime = Date.now();
     const mlPredictions = await getPredictions(inputs);
+    const duration = Date.now() - startTime;
+    console.log(`Prediction completed in ${duration} ms`);
 
     const recommendations = generateRecommendations(inputs, mlPredictions);
 
+    // Prepare prediction document values
+    const predictionDoc = {
+      userId: req.user._id,
+      cityName,
+      latitude,
+      longitude,
+      elevation: inputs.elevation,
+      temperature: inputs.temperature,
+      landCover: inputs.landCover,
+      populationDensity: inputs.populationDensity,
+      energyConsumption: inputs.energyConsumption,
+      aqi: inputs.aqi,
+      urbanGreennessRatio: inputs.urbanGreennessRatio,
+      heatRiskScore: mlPredictions['Heat Risk Score'],
+      heatVulnerabilityScore: mlPredictions['Heat Vulnerability Score'],
+      plantationPriorityScore: mlPredictions['Plantation Priority Score'],
+      futureTemperature: recommendations.futureTemperature,
+      riskCategory: recommendations.riskCategory,
+      plantationPriorityLevel: recommendations.plantationPriorityLevel,
+      plantationRanking: recommendations.plantationRanking,
+      greenCoverTarget: recommendations.greenCoverTarget,
+      temperatureReductionEstimate: recommendations.temperatureReductionEstimate,
+      climateRecommendations: recommendations.climateRecommendations
+    };
+
+    // Save complete prediction details to MongoDB and await it to prevent race conditions
+    const createdDoc = await Prediction.create(predictionDoc);
+    console.log(`[Database] Prediction record saved successfully: ${createdDoc._id}`);
+
     res.status(200).json({
       success: true,
+      data: createdDoc,
       inputs,
       predictions: {
         heatRiskScore: mlPredictions['Heat Risk Score'],

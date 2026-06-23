@@ -65,7 +65,7 @@ const HeatMap = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         const token = localStorage.getItem('token') || (user && user.token);
 
-        const response = await fetch('/api/city-data', {
+        let response = await fetch('/api/heatmap', {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -76,17 +76,29 @@ const HeatMap = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const json = await response.json();
+        let json = await response.json();
         if (json.success && json.data && json.data.length > 0) {
           setCities(json.data);
           setDataSource('database');
         } else {
-          console.log("Database empty or failed, falling back to mock dataset.");
-          setCities(fallbackMockCities);
-          setDataSource('mock');
+          // Fallback to general city-data
+          response = await fetch('/api/city-data', {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }
+          });
+          json = await response.json();
+          if (json.success && json.data && json.data.length > 0) {
+            setCities(json.data);
+            setDataSource('city-data');
+          } else {
+            setCities(fallbackMockCities);
+            setDataSource('mock');
+          }
         }
       } catch (err) {
-        console.warn("Failed to fetch backend city data, using mock dataset:", err.message);
+        console.warn("Failed to fetch backend heatmap data, using mock dataset:", err.message);
         setCities(fallbackMockCities);
         setDataSource('mock');
       } finally {
@@ -127,15 +139,12 @@ const HeatMap = () => {
     let pingColorClass = '';
     
     if (type === 'risk') {
-      if (score >= 75) {
+      if (score >= 60) {
         colorClass = 'bg-rose-500';
         pingColorClass = 'bg-rose-500';
-      } else if (score >= 50) {
-        colorClass = 'bg-orange-500';
-        pingColorClass = 'bg-orange-500';
-      } else if (score >= 25) {
-        colorClass = 'bg-amber-400';
-        pingColorClass = 'bg-amber-400';
+      } else if (score >= 30) {
+        colorClass = 'bg-amber-500';
+        pingColorClass = 'bg-amber-500';
       } else {
         colorClass = 'bg-emerald-500';
         pingColorClass = 'bg-emerald-500';
@@ -301,7 +310,7 @@ const HeatMap = () => {
                           }}
                         >
                           <Popup>
-                            <div className="p-1.5 space-y-1.5 min-w-[140px]">
+                            <div className="p-1.5 space-y-1.5 min-w-[150px]">
                               <h4 className="font-heading font-extrabold text-sm text-foreground">{city.cityName}</h4>
                               <p className="text-[10px] text-muted leading-none">Lat: {city.latitude.toFixed(2)}, Lng: {city.longitude.toFixed(2)}</p>
                               <div className="border-t border-border/40 my-1 pt-1.5 space-y-1 text-xs">
@@ -310,8 +319,16 @@ const HeatMap = () => {
                                   <span className="font-bold text-rose-400">{city.heatRiskScore}%</span>
                                 </div>
                                 <div className="flex justify-between gap-4">
-                                  <span className="text-muted">Canopy Void:</span>
+                                  <span className="text-muted">Vulnerability:</span>
+                                  <span className="font-bold text-orange-400">{(city.heatVulnerabilityScore || city.vulnerabilityScore || 0).toFixed(1)}%</span>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-muted">Planting Priority:</span>
                                   <span className="font-bold text-emerald-400">{city.plantationPriorityScore}%</span>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-muted">Risk Level:</span>
+                                  <span className="font-bold text-primary">{city.riskCategory || 'Moderate'}</span>
                                 </div>
                               </div>
                             </div>

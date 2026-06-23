@@ -6,11 +6,17 @@ import connectDB from './config/db.js';
 import requestLogger from './middleware/requestLogger.js';
 import apiRouter from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { startModelServer } from './services/mlService.js';
+import { loadCityDataCache } from './services/cityDataService.js';
 
 const app = express();
 
 // Connect to Database
-connectDB();
+connectDB().then(() => {
+  // Start persistent ML server and cache dataset statistics
+  startModelServer();
+  loadCityDataCache();
+});
 
 // Security Middlewares
 app.use(helmet());
@@ -53,13 +59,25 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 const PORT = config.port;
-const server = app.listen(PORT, () => {
-  console.log(`Server running in ${config.env} mode on port ${PORT}`);
+const HOST = '127.0.0.1';
+const server = app.listen(PORT, HOST, () => {
+  console.log(`Server running in ${config.env} mode on http://${HOST}:${PORT}`);
+});
+
+// Gracefully handle port already in use
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ Port ${PORT} is already in use.`);
+    console.error(`   Run: Get-Process node | Stop-Process -Force`);
+    console.error(`   Then restart the server.\n`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.error(`Unhandled Rejection: ${err.message}`);
-  // Close server & exit process
   server.close(() => process.exit(1));
 });

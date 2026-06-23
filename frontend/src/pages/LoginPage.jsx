@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowRight, ShieldCheck, Leaf, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
 
@@ -18,7 +22,7 @@ const LoginPage = () => {
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       tempErrors.email = 'Please provide a valid email';
     }
-    
+
     if (!password) {
       tempErrors.password = 'Password is required';
     } else if (password.length < 6) {
@@ -29,25 +33,40 @@ const LoginPage = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
-    
-    // Simulate API request to backend
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setLoginSuccess(true);
-      
-      // Save simulated user details to localStorage
-      localStorage.setItem('user', JSON.stringify({ email, role: 'Urban Planner' }));
+    setApiError('');
 
-      // Redirect back to LandingPage after showing success state
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.error || 'Invalid credentials. Please try again.');
+      }
+
+      // Persist token and user via AuthContext
+      login(data.token, data.user);
+      setLoginSuccess(true);
+
+      // Redirect to dashboard after brief success animation
       setTimeout(() => {
-        navigate('/');
-      }, 1500);
-    }, 1200);
+        navigate('/dashboard');
+      }, 1000);
+
+    } catch (err) {
+      setApiError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,14 +74,14 @@ const LoginPage = () => {
       {/* Visual glowing aura behind card */}
       <div className="absolute w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md glass-panel rounded-3xl p-8 relative border border-border"
       >
         <div className="text-center space-y-3 mb-8">
-          <motion.div 
+          <motion.div
             initial={{ rotate: -10 }}
             animate={{ rotate: 0 }}
             transition={{ type: 'spring', stiffness: 200 }}
@@ -76,12 +95,24 @@ const LoginPage = () => {
 
         <AnimatePresence mode="wait">
           {!loginSuccess ? (
-            <motion.form 
+            <motion.form
               key="login-form"
-              onSubmit={handleSubmit} 
+              onSubmit={handleSubmit}
               className="space-y-5"
               exit={{ opacity: 0, y: -20 }}
             >
+              {/* API Error Banner */}
+              {apiError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-sm"
+                >
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span>{apiError}</span>
+                </motion.div>
+              )}
+
               {/* Email Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground/80 tracking-wide uppercase">Email Address</label>
@@ -90,12 +121,13 @@ const LoginPage = () => {
                     <Mail size={16} />
                   </span>
                   <input
+                    id="login-email"
                     type="email"
                     placeholder="name@agency.gov"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`w-full pl-11 pr-4 py-3 rounded-xl glass-input outline-none text-sm text-foreground placeholder-muted ${
-                      errors.email ? 'border-rose-500/50 focus:border-rose-500/70 focus:shadow-rose-500/10' : ''
+                      errors.email ? 'border-rose-500/50' : ''
                     }`}
                   />
                 </div>
@@ -110,19 +142,19 @@ const LoginPage = () => {
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-foreground/80 tracking-wide uppercase">Password</label>
-                  <a href="#" className="text-xs text-primary hover:underline font-medium">Forgot?</a>
                 </div>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-muted pointer-events-none">
                     <Lock size={16} />
                   </span>
                   <input
+                    id="login-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`w-full pl-11 pr-4 py-3 rounded-xl glass-input outline-none text-sm text-foreground placeholder-muted ${
-                      errors.password ? 'border-rose-500/50 focus:border-rose-500/70 focus:shadow-rose-500/10' : ''
+                      errors.password ? 'border-rose-500/50' : ''
                     }`}
                   />
                 </div>
@@ -136,6 +168,7 @@ const LoginPage = () => {
               {/* Submit Button */}
               <motion.button
                 whileTap={{ scale: 0.98 }}
+                id="login-submit"
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-3.5 px-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-colors flex items-center justify-center gap-2 cursor-pointer mt-8"
@@ -151,7 +184,7 @@ const LoginPage = () => {
               </motion.button>
             </motion.form>
           ) : (
-            <motion.div 
+            <motion.div
               key="success-card"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -162,11 +195,8 @@ const LoginPage = () => {
               </div>
               <div>
                 <h3 className="font-heading font-bold text-xl text-foreground">Authentication Success</h3>
-                <p className="text-muted text-sm font-light mt-1">Initializing secure sandbox environment...</p>
+                <p className="text-muted text-sm font-light mt-1">Redirecting to your dashboard…</p>
               </div>
-              <p className="text-xs text-primary font-mono bg-primary/10 border border-primary/20 py-1.5 px-3 rounded-lg inline-block">
-                Token: {email.split('@')[0]}@metropolis.gov
-              </p>
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, Leaf, Menu, X, LogIn, UserPlus, Globe } from 'lucide-react';
+import { Sun, Moon, Leaf, Menu, X, LogIn, UserPlus, Globe, Brain, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = ({ darkMode, setDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
   };
 
-  const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Workspace', path: '/dashboard', icon: Globe },
-    { name: 'Login', path: '/login', icon: LogIn },
-    { name: 'Register', path: '/register', icon: UserPlus },
-  ];
+  const navItems = isAuthenticated
+    ? [{ name: 'Home', path: '/' }]
+    : [
+        { name: 'Home', path: '/' },
+        { name: 'Login', path: '/login', icon: LogIn },
+        { name: 'Register', path: '/register', icon: UserPlus },
+      ];
+
+  const initials = user?.name
+    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : 'EP';
+  const displayName = user?.name || 'Eco Planner';
 
   const isActive = (path) => location.pathname === path;
 
@@ -61,6 +69,26 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             ))}
           </div>
 
+          {isAuthenticated && (
+            <div className="flex items-center gap-4 pl-2 border-l border-border/60">
+              <Link to="/dashboard" className="flex items-center gap-2.5 group">
+                <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-heading font-semibold text-[10px] transition-colors group-hover:bg-primary/20">
+                  {initials}
+                </div>
+                <span className="text-xs font-semibold text-muted hover:text-foreground transition-colors">
+                  {displayName}
+                </span>
+              </Link>
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all text-xs font-medium cursor-pointer bg-transparent border-none"
+              >
+                <LogOut size={14} />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+
           {/* Theme Toggler */}
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -84,7 +112,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-xl bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors"
+            className="p-2 rounded-xl bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors bg-transparent border-none"
           >
             {isOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -116,6 +144,31 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 <span>{item.name}</span>
               </Link>
             ))}
+
+            {isAuthenticated && (
+              <div className="border-t border-border/60 pt-3 flex flex-col gap-2">
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 text-muted"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-heading font-semibold text-xs">
+                    {initials}
+                  </div>
+                  <span className="text-sm font-medium">{displayName}</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all cursor-pointer bg-transparent border-none text-left"
+                >
+                  <LogOut size={18} />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
