@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import config from './config.js';
 
 let cached = global.mongoose;
+let lastError = null;
+let lastErrorTime = 0;
 
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
@@ -16,7 +18,14 @@ const connectDB = async () => {
     return cached.promise;
   }
 
+  // Prevent freezing every incoming request with 5s timeout if Atlas auth recently failed
+  const now = Date.now();
+  if (lastError && (now - lastErrorTime < 15000)) {
+    throw lastError;
+  }
+
   const mongoUri = config.mongoUri;
+
   if (!mongoUri) {
     const err = new Error('MONGO_URI is missing in backend/.env');
     console.error(`[MongoDB Error] ${err.message}`);
@@ -36,6 +45,8 @@ const connectDB = async () => {
     })
     .catch((err) => {
       cached.promise = null;
+      lastError = err;
+      lastErrorTime = Date.now();
       console.error(`\n❌ [MongoDB Atlas Connection Error]`);
       console.error(`   Error message: ${err.message}`);
       console.error(`   Target URI: ${mongoUri.replace(/:([^:@]+)@/, ':****@')}`);
