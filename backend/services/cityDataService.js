@@ -1,15 +1,26 @@
 import CityData from '../models/CityData.js';
 
+const defaultBounds = {
+  temp_min: 10.08,
+  temp_max: 34.96,
+  pop_min: 506.0,
+  pop_max: 9996.0,
+  energy_min: 1021.7,
+  energy_max: 49977.65,
+  aqi_min: 30.0,
+  aqi_max: 199.0,
+};
+
 let cachedCityDataMapped = null;
-let cachedBounds = null;
+let cachedBounds = defaultBounds;
 
 export const loadCityDataCache = async () => {
   try {
     const rawCityData = await CityData.find({});
     if (rawCityData.length === 0) {
       cachedCityDataMapped = [];
-      cachedBounds = null;
-      console.log('[City Data Cache] Cache initialized. No city data records in DB.');
+      cachedBounds = defaultBounds;
+      console.log('[City Data Cache] Cache initialized. No city data records in DB. Using default bounds.');
       return;
     }
 
@@ -76,6 +87,8 @@ export const loadCityDataCache = async () => {
     console.log(`[City Data Cache] Cached ${cachedCityDataMapped.length} city data records and recalculated statistics.`);
   } catch (err) {
     console.error(`[City Data Cache] Error loading cache:`, err.message);
+    cachedCityDataMapped = cachedCityDataMapped || [];
+    cachedBounds = cachedBounds || defaultBounds;
   }
 };
 
@@ -83,12 +96,12 @@ export const getCachedCityDataMapped = async () => {
   if (cachedCityDataMapped === null) {
     await loadCityDataCache();
   }
-  return cachedCityDataMapped;
+  return cachedCityDataMapped || [];
 };
 
 export const getCachedBounds = async () => {
   if (cachedBounds === null) {
     await loadCityDataCache();
   }
-  return cachedBounds;
+  return cachedBounds || defaultBounds;
 };

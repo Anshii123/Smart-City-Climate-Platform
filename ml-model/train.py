@@ -96,23 +96,17 @@ def main():
     X_train_processed = preprocessor.fit_transform(X_train)
     joblib.dump(preprocessor, 'models/preprocessor.joblib')
 
-    # Train RandomForest Regressors
-    print("Training Heat Risk model...")
     model_risk = RandomForestRegressor(n_estimators=100, random_state=42)
     model_risk.fit(X_train_processed, y_train['Heat Risk Score'])
     joblib.dump(model_risk, 'models/model_risk.joblib')
 
-    print("Training Heat Vulnerability model...")
     model_vulnerability = RandomForestRegressor(n_estimators=100, random_state=42)
     model_vulnerability.fit(X_train_processed, y_train['Heat Vulnerability Score'])
     joblib.dump(model_vulnerability, 'models/model_vulnerability.joblib')
 
-    print("Training Plantation Priority model...")
     model_plantation = RandomForestRegressor(n_estimators=100, random_state=42)
     model_plantation.fit(X_train_processed, y_train['Plantation Priority Score'])
     joblib.dump(model_plantation, 'models/model_plantation.joblib')
-
-    print("Model training complete. Preprocessors and models saved to 'models/' directory.")
 
 if __name__ == '__main__':
     main()

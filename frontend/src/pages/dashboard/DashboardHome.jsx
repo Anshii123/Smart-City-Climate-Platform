@@ -5,6 +5,7 @@ import {
   Thermometer, Trees, Sun, HeartPulse, ArrowUpRight, ArrowDownRight, Clock, Building2, ShieldAlert,
   Trash2, Eye, History, X, Sparkles
 } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 // Custom Animated Counter component for rolling metric numbers
 const AnimatedCounter = ({ value, duration = 1.0, suffix = '', decimals = 0, prefix = '' }) => {
@@ -53,7 +54,7 @@ const DashboardHome = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch('/api/predictions', {
+      const response = await fetch(getApiUrl('/api/predictions'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -81,7 +82,7 @@ const DashboardHome = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch(`/api/predictions/${id}`, {
+      const response = await fetch(getApiUrl(`/api/predictions/${id}`), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ const DashboardHome = () => {
       const token = localStorage.getItem('token') || (user && user.token);
 
       for (const item of history) {
-        await fetch(`/api/predictions/${item._id}`, {
+        await fetch(getApiUrl(`/api/predictions/${item._id}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

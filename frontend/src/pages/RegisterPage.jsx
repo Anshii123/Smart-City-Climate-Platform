@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Briefcase, MapPin, ArrowRight, ShieldCheck, Leaf, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const RegisterPage = () => {
     setApiError('');
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(getApiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // Backend only accepts role: 'user' | 'admin' — send 'user' always

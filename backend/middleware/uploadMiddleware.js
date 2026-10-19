@@ -1,14 +1,20 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import multer from 'multer';
+
+const uploadDir = path.join(os.tmpdir(), 'climate_uploads');
+if (!fs.existsSync(uploadDir)) {
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (e) {
+    // Fall back gracefully if creation fails
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.resolve('uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
+    cb(null, fs.existsSync(uploadDir) ? uploadDir : os.tmpdir());
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);

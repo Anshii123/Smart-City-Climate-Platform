@@ -8,6 +8,7 @@ import {
   BarChart3, Info, Download, Filter, Thermometer, ShieldAlert, 
   Trees, Layers, AlertCircle, Compass, Wind, Users, Plus, LayoutGrid, CheckCircle2 
 } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 // Unified fallback mock dataset matching HeatMap.jsx
 const fallbackMockCities = [
@@ -89,7 +90,7 @@ const Analytics = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         const token = localStorage.getItem('token') || (user && user.token);
 
-        const response = await fetch('/api/analytics', {
+        const response = await fetch(getApiUrl('/api/analytics'), {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})

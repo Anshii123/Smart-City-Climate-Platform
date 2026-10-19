@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Award, ShieldAlert, Trees, Thermometer, Compass } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 const RankingList = () => {
   const [rankings, setRankings] = useState([]);
@@ -13,7 +14,7 @@ const RankingList = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch('/api/rankings', {
+      const response = await fetch(getApiUrl('/api/rankings'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})

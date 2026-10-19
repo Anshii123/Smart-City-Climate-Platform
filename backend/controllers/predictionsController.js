@@ -1,13 +1,24 @@
+import mongoose from 'mongoose';
 import Prediction from '../models/Prediction.js';
 import CityData from '../models/CityData.js';
 import { getCachedCityDataMapped } from '../services/cityDataService.js';
+import { getDevPredictions, addDevPrediction, deleteDevPrediction } from '../services/devStore.js';
 
 // @desc    Get predictions for the logged-in user
 // @route   GET /api/predictions
 // @access  Private
 export const getPredictions = async (req, res, next) => {
   try {
-    const predictions = await Prediction.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    let predictions = [];
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        predictions = await Prediction.find({ userId: req.user._id }).sort({ createdAt: -1 });
+      } catch {
+        predictions = getDevPredictions();
+      }
+    } else {
+      predictions = getDevPredictions();
+    }
     res.status(200).json({
       success: true,
       count: predictions.length,
@@ -41,7 +52,7 @@ export const savePrediction = async (req, res, next) => {
       }
     }
 
-    const predictionDoc = await Prediction.create({
+    const docData = {
       userId: req.user._id,
       cityName: cityName || 'Custom City',
       latitude: parseFloat(latitude) || 0,
@@ -63,7 +74,18 @@ export const savePrediction = async (req, res, next) => {
       greenCoverTarget: parseFloat(greenCoverTarget) || 30,
       temperatureReductionEstimate: parseFloat(temperatureReductionEstimate) || 0,
       climateRecommendations: Array.isArray(climateRecommendations) ? climateRecommendations : []
-    });
+    };
+
+    let predictionDoc;
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        predictionDoc = await Prediction.create(docData);
+      } catch {
+        predictionDoc = addDevPrediction(docData);
+      }
+    } else {
+      predictionDoc = addDevPrediction(docData);
+    }
 
     res.status(201).json({
       success: true,
@@ -99,14 +121,18 @@ export const getPredictionById = async (req, res, next) => {
 // @access  Private
 export const deletePrediction = async (req, res, next) => {
   try {
-    const prediction = await Prediction.findById(req.params.id);
-    if (!prediction) {
-      const error = new Error('Prediction not found');
-      error.statusCode = 404;
-      return next(error);
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        const prediction = await Prediction.findById(req.params.id);
+        if (prediction) {
+          await prediction.deleteOne();
+        }
+      } catch {
+        deleteDevPrediction(req.params.id);
+      }
+    } else {
+      deleteDevPrediction(req.params.id);
     }
-
-    await prediction.deleteOne();
 
     res.status(200).json({
       success: true,
@@ -122,9 +148,22 @@ export const deletePrediction = async (req, res, next) => {
 // @access  Private
 export const getRankings = async (req, res, next) => {
   try {
-    const rankings = await Prediction.find({})
-      .sort({ plantationPriorityScore: -1 })
-      .limit(10);
+    let rankings = [];
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        rankings = await Prediction.find({})
+          .sort({ plantationPriorityScore: -1 })
+          .limit(10);
+      } catch {
+        rankings = getDevPredictions()
+          .sort((a, b) => b.plantationPriorityScore - a.plantationPriorityScore)
+          .slice(0, 10);
+      }
+    } else {
+      rankings = getDevPredictions()
+        .sort((a, b) => b.plantationPriorityScore - a.plantationPriorityScore)
+        .slice(0, 10);
+    }
 
     res.status(200).json({
       success: true,
@@ -141,7 +180,16 @@ export const getRankings = async (req, res, next) => {
 // @access  Private
 export const getHeatmap = async (req, res, next) => {
   try {
-    const predictions = await Prediction.find({});
+    let predictions = [];
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        predictions = await Prediction.find({});
+      } catch {
+        predictions = getDevPredictions();
+      }
+    } else {
+      predictions = getDevPredictions();
+    }
     
     // Flat mapping so they match UI city node layout
     const mapped = predictions.map(p => ({
