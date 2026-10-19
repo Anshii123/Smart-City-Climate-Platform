@@ -19,7 +19,7 @@ Aapke system ko **3 Dedicated Servers** me organize kiya gaya hai:
 │         ├────────► [ MongoDB Atlas Database ]             │
 │         ▼ HTTP /predict                                   │
 │  [ SERVER 3: AI / ML SERVER ] (Python HTTP Service)       │
-│  - Port: 5005 (Local) or ai-ml.vercel.app                 │
+│  - Port: 8000 (Local) or ai-ml.vercel.app                 │
 │  - Endpoints: GET /health, POST /predict                  │
 │                                                           │
 └───────────────────────────────────────────────────────────┘
@@ -31,15 +31,15 @@ Aapke system ko **3 Dedicated Servers** me organize kiya gaya hai:
 
 Aap 3 alag-alag terminals me ye 3 servers chala sakte hain:
 
-### Terminal 1: AI / ML Server (Port 5005)
+### Terminal 1: AI / ML Server (Port 8000)
 ```bash
 # Terminal 1
 cd "d:\My Programs\Smart-City-Climate-Platform"
 npm run server:ml
 # Ya directly:
-# cd ml-model && python server.py 5005
+# cd ml-model && python server.py 8000
 ```
-*Output: `[AI/ML Server] Prediction server running on http://0.0.0.0:5005`*
+*Output: `[AI/ML Server] Prediction server running on http://0.0.0.0:8000`*
 
 ### Terminal 2: Backend API Server (Port 5000)
 ```bash

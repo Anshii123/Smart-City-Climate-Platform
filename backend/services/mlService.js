@@ -71,11 +71,11 @@ export const startModelServer = () => {
 
   const scriptPath = path.resolve(__dirname, '../../ml-model/server.py');
   const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-  
+
   console.log(`[ML Server] Starting persistent Python prediction service...`);
-  
+
   try {
-    pyProcess = spawn(pythonCmd, [scriptPath, '5005'], {
+    pyProcess = spawn(pythonCmd, [scriptPath, '8000'], {
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
@@ -115,7 +115,7 @@ export const startModelServer = () => {
 const getPredictionsFallback = (params) => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.resolve(__dirname, '../../ml-model/predict.py');
-    
+
     const args = [
       scriptPath,
       '--lat', (params.latitude ?? 0).toString(),
@@ -155,7 +155,7 @@ const queryLocalPythonServer = (params) => {
 
     const options = {
       hostname: '127.0.0.1',
-      port: 5005,
+      port: 8000,
       path: '/predict',
       method: 'POST',
       headers: {
