@@ -5,6 +5,7 @@ import {
   ArrowRight, ShieldCheck, HeartPulse, ClipboardCheck, Sparkles, Navigation, Save
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 
 const CircularGauge = ({ value, label, colorClass = "text-primary", max = 100 }) => {
   const radius = 40;
@@ -270,7 +271,7 @@ const ClimateAssessment = () => {
     };
 
     try {
-      const response = await fetch('/api/predict', {
+      const response = await fetch(getApiUrl('/api/predict'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -337,7 +338,7 @@ const ClimateAssessment = () => {
     // Fallback path — explicitly POST to /api/predictions
     setSaveStatus('saving');
     try {
-      const response = await fetch('/api/predictions', {
+      const response = await fetch(getApiUrl('/api/predictions'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { History, Search, Trash2, Eye, X, Sparkles, AlertTriangle, Activity } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 const PredictionHistory = () => {
   const [predictions, setPredictions] = useState([]);
@@ -15,7 +16,7 @@ const PredictionHistory = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch('/api/predictions', {
+      const response = await fetch(getApiUrl('/api/predictions'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -49,7 +50,7 @@ const PredictionHistory = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch(`/api/predictions/${id}`, {
+      const response = await fetch(getApiUrl(`/api/predictions/${id}`), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

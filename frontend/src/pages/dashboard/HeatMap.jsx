@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getApiUrl } from '../../config/api';
 
 // Fallback Mock Dataset derived from urban_heat_island_dataset.csv
 const fallbackMockCities = [
@@ -65,7 +66,7 @@ const HeatMap = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         const token = localStorage.getItem('token') || (user && user.token);
 
-        let response = await fetch('/api/heatmap', {
+        let response = await fetch(getApiUrl('/api/heatmap'), {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -82,7 +83,7 @@ const HeatMap = () => {
           setDataSource('database');
         } else {
           // Fallback to general city-data
-          response = await fetch('/api/city-data', {
+          response = await fetch(getApiUrl('/api/city-data'), {
             headers: {
               'Content-Type': 'application/json',
               ...(token ? { 'Authorization': `Bearer ${token}` } : {})

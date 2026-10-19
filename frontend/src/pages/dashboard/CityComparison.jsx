@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Layers, CheckSquare, Square, BarChart3, TrendingUp, ShieldAlert, Trees, Thermometer } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { getApiUrl } from '../../config/api';
 
 const CityComparison = () => {
   const [predictions, setPredictions] = useState([]);
@@ -15,7 +16,7 @@ const CityComparison = () => {
       const user = userStr ? JSON.parse(userStr) : null;
       const token = localStorage.getItem('token') || (user && user.token);
 
-      const response = await fetch('/api/predictions', {
+      const response = await fetch(getApiUrl('/api/predictions'), {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})

@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+import { addDevPrediction } from '../services/devStore.js';
 import { getPredictions } from '../services/mlService.js';
 import { generateRecommendations } from '../services/recommendationService.js';
 import Prediction from '../models/Prediction.js';
@@ -96,9 +98,20 @@ export const predictClimate = async (req, res, next) => {
       climateRecommendations: recommendations.climateRecommendations
     };
 
-    // Save complete prediction details to MongoDB and await it to prevent race conditions
-    const createdDoc = await Prediction.create(predictionDoc);
-    console.log(`[Database] Prediction record saved successfully: ${createdDoc._id}`);
+    // Save complete prediction details to MongoDB or in-memory dev store
+    let createdDoc;
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        createdDoc = await Prediction.create(predictionDoc);
+        console.log(`[Database] Prediction record saved successfully: ${createdDoc._id}`);
+      } catch (dbErr) {
+        console.warn(`[Database Warning] Save error: ${dbErr.message}. Saving to dev store.`);
+        createdDoc = addDevPrediction(predictionDoc);
+      }
+    } else {
+      createdDoc = addDevPrediction(predictionDoc);
+      console.log(`[Dev Store] Prediction record saved to development store: ${createdDoc._id}`);
+    }
 
     res.status(200).json({
       success: true,

@@ -66,13 +66,9 @@ def main():
         f"{plant_report}"
     )
 
-    # Show report
-    print(full_report)
-
     # Save to file
     with open('models/evaluation_report.txt', 'w') as f:
         f.write(full_report)
-    print("Report written successfully to 'models/evaluation_report.txt'.")
 
 if __name__ == '__main__':
     main()

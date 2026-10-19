@@ -80,7 +80,6 @@ def main():
             aqi=args.aqi,
             urban_greenness_ratio=args.greenness
         )
-        print(json.dumps(results, indent=2))
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         sys.exit(1)

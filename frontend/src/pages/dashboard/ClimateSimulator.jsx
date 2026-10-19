@@ -7,6 +7,7 @@ import {
   Sliders, Sun, ShieldCheck, Thermometer, Trees, Sparkles, 
   AlertCircle, DollarSign, Database, CloudRain, Heart, Landmark, Compass, Wind, ShieldAlert
 } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 // Fallback Mock Dataset matching HeatMap.jsx & Analytics.jsx
 const fallbackMockCities = [
@@ -39,7 +40,7 @@ const ClimateSimulator = () => {
         const user = userStr ? JSON.parse(userStr) : null;
         const token = localStorage.getItem('token') || (user && user.token);
 
-        const response = await fetch('/api/city-data', {
+        const response = await fetch(getApiUrl('/api/city-data'), {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
