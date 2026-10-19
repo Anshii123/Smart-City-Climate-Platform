@@ -41,3 +41,4 @@ __pycache__/
 .vercel/
 venv
 .venv
+.dbdata/
